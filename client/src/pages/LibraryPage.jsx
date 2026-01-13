@@ -7,7 +7,7 @@ import bookService from '../api/bookApi';
 import './LibraryPage.css';
 
 /**
- * Library Page - Read-only view of user's saved books
+ * Library Page - View and manage user's saved books
  * Protected route - requires authentication
  */
 const LibraryPage = () => {
@@ -20,6 +20,8 @@ const LibraryPage = () => {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editingReviews, setEditingReviews] = useState({});
+  const [updating, setUpdating] = useState({});
 
   const BOOKS_PER_PAGE = 12;
 
@@ -61,6 +63,63 @@ const LibraryPage = () => {
   const handleStatusFilter = (status) => {
     setSelectedStatus(status);
     setCurrentPage(1);
+  };
+
+  const handleReviewChange = (bookId, review) => {
+    setEditingReviews((prev) => ({
+      ...prev,
+      [bookId]: review,
+    }));
+  };
+
+  const handleStatusChange = (bookId, newStatus) => {
+    setBooks((prev) =>
+      prev.map((book) =>
+        book._id === bookId ? { ...book, status: newStatus } : book
+      )
+    );
+  };
+
+  const handleUpdateBook = async (bookId) => {
+    try {
+      setUpdating((prev) => ({ ...prev, [bookId]: true }));
+      const book = books.find((b) => b._id === bookId);
+      
+      await bookService.updateBook(bookId, {
+        personalReview: editingReviews[bookId] !== undefined ? editingReviews[bookId] : book.personalReview,
+        status: book.status,
+      });
+
+      setEditingReviews((prev) => {
+        const newReviews = { ...prev };
+        delete newReviews[bookId];
+        return newReviews;
+      });
+
+      alert('Book updated successfully!');
+    } catch (err) {
+      alert('Error updating book. Please try again.');
+      console.error('Error updating book:', err);
+    } finally {
+      setUpdating((prev) => ({ ...prev, [bookId]: false }));
+    }
+  };
+
+  const handleDeleteBook = async (bookId) => {
+    if (window.confirm('Are you sure you want to remove this book from your library?')) {
+      try {
+        setUpdating((prev) => ({ ...prev, [bookId]: true }));
+        await bookService.deleteBook(bookId);
+        setBooks((prev) => prev.filter((b) => b._id !== bookId));
+        setTotalBooks((prev) => prev - 1);
+        alert('Book removed from your library');
+      } catch (err) {
+        alert('Error removing book. Please try again.');
+        console.error('Error deleting book:', err);
+      } finally {
+        setUpdating((prev) => ({ ...prev, [bookId]: false }));
+      }
+    }
   };
 
   const totalPages = Math.ceil(totalBooks / BOOKS_PER_PAGE);
@@ -110,7 +169,14 @@ const LibraryPage = () => {
               {books.map((book) => (
                 <BookCard
                   key={book._id}
-                  book={book}
+                  book={{
+                    ...book,
+                    personalReview: editingReviews[book._id] !== undefined ? editingReviews[book._id] : book.personalReview,
+                  }}
+                  onReviewChange={handleReviewChange}
+                  onStatusChange={handleStatusChange}
+                  onUpdate={handleUpdateBook}
+                  onDelete={handleDeleteBook}
                   isInLibrary={true}
                   showReview={true}
                 />
