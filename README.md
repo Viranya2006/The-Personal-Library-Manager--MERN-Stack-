@@ -1,5 +1,7 @@
 # 📚 Personal Library Manager (MERN Stack)
 
+🔗 Live Demo: https://the-personal-library-manager-mern-s.vercel.app/
+
 A **full-stack MERN application** that allows users to search books via the Google Books API and manage a **personal reading library** with authentication, reviews, and reading status tracking.
 
 This project was built as a **full-stack internship assessment** to demonstrate real-world MERN architecture, secure authentication, REST APIs, and clean frontend state management.
