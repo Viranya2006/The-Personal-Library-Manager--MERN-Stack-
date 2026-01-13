@@ -7,6 +7,13 @@ import bookService from '../api/bookApi';
 import './SearchPage.css';
 
 /**
+ * Helper function to get unique book ID
+ */
+const getBookId = (book) => {
+  return book.googleBookId || book._id || `temp-${Math.random()}`;
+};
+
+/**
  * Search Page - Search Google Books API
  */
 const SearchPage = () => {
@@ -106,7 +113,7 @@ const SearchPage = () => {
             <div className="books-grid">
               {books.map((book) => (
                 <BookCard
-                  key={book.googleBookId}
+                  key={getBookId(book)}
                   book={book}
                   onSave={handleSaveBook}
                   isInLibrary={savedBooks.has(book.googleBookId)}

@@ -1,11 +1,10 @@
-import apiClient from './axiosInstance';
-
+import axios from "../api/axiosInstance";
 /**
  * Auth API calls
  */
 const authService = {
   register: async (username, email, password) => {
-    const response = await apiClient.post('/auth/register', {
+    const response = await axios.post('/auth/register', {
       username,
       email,
       password,
@@ -14,7 +13,7 @@ const authService = {
   },
 
   login: async (email, password) => {
-    const response = await apiClient.post('/auth/login', {
+    const response = await axios.post('/auth/login', {
       email,
       password,
     });
@@ -22,7 +21,7 @@ const authService = {
   },
 
   getCurrentUser: async () => {
-    const response = await apiClient.get('/auth/me');
+    const response = await axios.get('/auth/me');
     return response.data;
   },
 
