@@ -1,27 +1,41 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BookCard from '../components/BookCard';
 import Pagination from '../components/Pagination';
+import { useAuth } from '../context/AuthContext';
 import bookService from '../api/bookApi';
 import './LibraryPage.css';
 
 /**
- * Library Page - User's saved books
+ * Library Page - Read-only view of user's saved books
+ * Protected route - requires authentication
  */
 const LibraryPage = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
   const [books, setBooks] = useState([]);
   const [totalBooks, setTotalBooks] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStatus, setSelectedStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [editingReviews, setEditingReviews] = useState({});
 
   const BOOKS_PER_PAGE = 12;
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+
   // Fetch user's library on mount and when filters change
   useEffect(() => {
-    fetchLibrary(1, selectedStatus);
-  }, [selectedStatus]);
+    if (isAuthenticated) {
+      fetchLibrary(1, selectedStatus);
+    }
+  }, [selectedStatus, isAuthenticated]);
 
   const fetchLibrary = async (page, status) => {
     setIsLoading(true);
@@ -47,56 +61,6 @@ const LibraryPage = () => {
   const handleStatusFilter = (status) => {
     setSelectedStatus(status);
     setCurrentPage(1);
-  };
-
-  const handleReviewChange = (bookId, review) => {
-    setEditingReviews((prev) => ({
-      ...prev,
-      [bookId]: review,
-    }));
-  };
-
-  const handleStatusChange = (bookId, newStatus) => {
-    setBooks((prev) =>
-      prev.map((book) =>
-        book._id === bookId ? { ...book, status: newStatus } : book
-      )
-    );
-  };
-
-  const handleUpdateBook = async (bookId) => {
-    try {
-      const book = books.find((b) => b._id === bookId);
-      await bookService.updateBook(bookId, {
-        personalReview: editingReviews[bookId] || book.personalReview,
-        status: book.status,
-      });
-
-      setEditingReviews((prev) => {
-        const newReviews = { ...prev };
-        delete newReviews[bookId];
-        return newReviews;
-      });
-
-      alert('Book updated successfully!');
-    } catch (err) {
-      alert('Error updating book');
-      console.error('Error updating book:', err);
-    }
-  };
-
-  const handleDeleteBook = async (bookId) => {
-    if (window.confirm('Are you sure you want to remove this book from your library?')) {
-      try {
-        await bookService.deleteBook(bookId);
-        setBooks((prev) => prev.filter((b) => b._id !== bookId));
-        setTotalBooks((prev) => prev - 1);
-        alert('Book removed from your library');
-      } catch (err) {
-        alert('Error removing book');
-        console.error('Error deleting book:', err);
-      }
-    }
   };
 
   const totalPages = Math.ceil(totalBooks / BOOKS_PER_PAGE);
@@ -146,14 +110,8 @@ const LibraryPage = () => {
               {books.map((book) => (
                 <BookCard
                   key={book._id}
-                  book={{
-                    ...book,
-                    personalReview: editingReviews[book._id] ?? book.personalReview,
-                  }}
-                  onReviewChange={handleReviewChange}
-                  onStatusChange={handleStatusChange}
-                  onUpdate={handleUpdateBook}
-                  onDelete={handleDeleteBook}
+                  book={book}
+                  isInLibrary={true}
                   showReview={true}
                 />
               ))}

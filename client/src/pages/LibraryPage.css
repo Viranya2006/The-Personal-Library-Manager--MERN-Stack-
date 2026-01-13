@@ -54,6 +54,23 @@
   color: white;
 }
 
+.error-message {
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background-color: var(--error-bg, rgba(239, 68, 68, 0.1));
+  border: 1px solid var(--error-color, #ef4444);
+  border-radius: 8px;
+  color: var(--error-color, #dc2626);
+  font-weight: 600;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
 .books-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
