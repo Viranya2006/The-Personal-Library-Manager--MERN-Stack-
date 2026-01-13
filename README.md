@@ -112,8 +112,6 @@ REACT_APP_API_URL=http://localhost:5000/api
 REACT_APP_GOOGLE_BOOKS_API_KEY=your_google_books_api_key
 ```
 
-> ⚠️ Never commit `.env` files to GitHub.
-
 ---
 
 ## 🏃‍♂️ Running Locally
